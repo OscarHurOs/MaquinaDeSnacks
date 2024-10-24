@@ -66,19 +66,18 @@ public class MaquinaSnacks {
      */
     private static boolean ejecutarOpciones(int opcion, Scanner consola, List<Snack> productosComprados) {
 
-        var salir = false;
         switch (opcion) {
             case 1 -> comprarSnack(consola, productosComprados);
             case 2 -> mostrarTicket(productosComprados);
             case 3 -> agregarSnack(consola);
             case 4 -> {
                 System.out.println("Regresa pronto!");
-                salir = true;
+                return true;
 
             }
             default -> System.out.println("Opción invalida: " + opcion);
         }
-        return salir;
+        return false;
     }
 
     /**
@@ -88,20 +87,19 @@ public class MaquinaSnacks {
      * @param productosComprados Lista donde se almacenarán los snacks comprados.
      */
     private static void comprarSnack(Scanner consola, List<Snack> productosComprados) {
-        System.out.println("--Que snack quieres comprar (id) ?");
-        var idsnack = Integer.parseInt(consola.nextLine());
-        var snackEncontrado = false;
-        for (var snack : Snacks.getSnacks()) {
-            if (idsnack == snack.getIdSnack()) {
-                productosComprados.add(snack);
-                System.out.println(" Ok, Snack agregado : " + snack);
-                snackEncontrado = true;
-                break;
-            }
-        }
-        if (!snackEncontrado) {
-            System.out.println(" Id de snack no encontrado: " + idsnack);
-        }
+        System.out.println("¿Qué snack quieres comprar (id)?");
+        int idSnack = Integer.parseInt(consola.nextLine());
+
+        Snacks.getSnacks().stream()
+                .filter(snack -> snack.getIdSnack() == idSnack)
+                .findFirst()
+                .ifPresentOrElse(
+                        snack -> {
+                            productosComprados.add(snack);
+                            System.out.println("Snack agregado: " + snack);
+                        },
+                        () -> System.out.println("Id de snack no encontrado: " + idSnack)
+                );
     }
 
     /**
@@ -110,18 +108,17 @@ public class MaquinaSnacks {
      * @param productosComprados Lista de snacks comprados.
      */
     private static void mostrarTicket(List<Snack> productosComprados) {
-        var ticket = new StringBuilder("*** Ticket de venta ***");
-        var total = 0.0;
+        StringBuilder ticket = new StringBuilder("*** Ticket de Venta ***\n");
+        double total = productosComprados.stream()
+                .mapToDouble(Snack::getPrecio)
+                .sum();
 
-        for (var producto : productosComprados) {
-            ticket.append("\n\t-")
-                    .append(producto.getNombre())
-                    .append(" - $")
-                    .append(producto.getPrecio());
-            total += producto.getPrecio();
-        }
+        productosComprados.forEach(producto ->
+                ticket.append("- ").append(producto.getNombre())
+                        .append(" - $").append(producto.getPrecio()).append("\n")
+        );
 
-        ticket.append("\n\tTotal -> $").append(total);
+        ticket.append("Total: $").append(total);
         System.out.println(ticket);
     }
 
@@ -131,12 +128,13 @@ public class MaquinaSnacks {
      * @param consola Scanner para capturar los datos del nuevo snack.
      */
     private static void agregarSnack(Scanner consola) {
-        System.out.println("Nombre del snack : ");
-        var nombre = consola.nextLine();
-        System.out.println("Precio del snack : ");
-        var precio = Double.parseDouble(consola.nextLine());
+        System.out.print("Nombre del snack: ");
+        String nombre = consola.nextLine();
+        System.out.print("Precio del snack: ");
+        double precio = Double.parseDouble(consola.nextLine());
+
         Snacks.agregarSnack(new Snack(nombre, precio));
-        System.out.println("Tu snack se ha agregado correctamente");
+        System.out.println("Snack agregado correctamente.");
         Snacks.mostrarSnacks();
     }
 }
