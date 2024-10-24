@@ -19,15 +19,15 @@ public class Snacks {
     }
 
     public static void mostrarSnacks() {
-        var inventarioSnacks = "";
+        var inventarioSnacks = new StringBuilder();
         for (var snack : snacks) {
-            inventarioSnacks += snack.toString() + "\n";
+            inventarioSnacks.append(snack.toString()).append("\n");
         }
         System.out.println("---- Snacks en el inventario ---");
         System.out.println(inventarioSnacks);
     }
 
-    public static List<Snack>getSnacks(){
+    public static List<Snack> getSnacks() {
         return snacks;
     }
 }
