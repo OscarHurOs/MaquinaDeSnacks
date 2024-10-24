@@ -4,23 +4,37 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
+/**
+ * Clase principal que representa la lógica de interacción de la máquina de snacks.
+ * Permite al usuario comprar snacks, ver el ticket de compra y añadir nuevos productos.
+ */
 public class MaquinaSnacks {
     public static void main(String[] args) {
-        maquinaSnacks();
+
+        try (var consola = new Scanner(System.in)) {
+            iniciarMaquina(consola);
+        } catch (Exception e) {
+            System.out.println("Error inesperado: " + e.getMessage());
+        }
     }
 
-    private static void maquinaSnacks() {
-        var salir = false;
-        var consola = new Scanner(System.in);
-
-        List<Snack> productos = new ArrayList<>();
+    /**
+     * Inicia la máquina de snacks, gestionando el flujo principal.
+     *
+     * @param consola Scanner para la entrada del usuario.
+     */
+    private static void iniciarMaquina(Scanner consola) {
+        boolean salir = false;
+        List<Snack> productosComprados = new ArrayList<>();
         System.out.println("--- Maquina de snacks ---");
         Snacks.mostrarSnacks();
 
         while (!salir) {
             try {
-                var opcion = mostrarMenu(consola);
-                salir = ejecutarOpciones(opcion, consola, productos);
+                int opcion = mostrarMenu(consola);
+                salir = ejecutarOpciones(opcion, consola, productosComprados);
+            } catch (NullPointerException num) {
+                System.out.println("Entrada inválida. Por favor, ingresa un número.");
             } catch (Exception e) {
                 System.out.println("Ocurrió un error: " + e.getMessage());
             } finally {
@@ -29,7 +43,12 @@ public class MaquinaSnacks {
         }
     }
 
-
+    /**
+     * Muestra el menú de opciones disponibles para el usuario y retorna su selección.
+     *
+     * @param consola Scanner para capturar la entrada del usuario.
+     * @return Opción seleccionada por el usuario.
+     */
     private static int mostrarMenu(Scanner consola) {
         System.out.println("""
                 Menu:
@@ -42,65 +61,111 @@ public class MaquinaSnacks {
         return Integer.parseInt(consola.nextLine());
     }
 
-    private static boolean ejecutarOpciones(int opcion, Scanner consola, List<Snack> productos) {
+    /**
+     * Procesa la opción seleccionada por el usuario y ejecuta la acción correspondiente.
+     *
+     * @param opcion             Opción ingresada por el usuario.
+     * @param consola            Scanner para la entrada del usuario.
+     * @param productosComprados Lista de snacks comprados por el usuario.
+     * @return true si el usuario decide salir; false en caso contrario.
+     */
+    private static boolean ejecutarOpciones(int opcion, Scanner consola, List<Snack> productosComprados) {
 
-        var salir = false;
         switch (opcion) {
-            case 1 -> comprarSnack(consola, productos);
-            case 2 -> mostrarTicket(productos);
+            case 1 -> comprarSnack(consola, productosComprados);
+            case 2 -> mostrarTicket(productosComprados);
             case 3 -> agregarSnack(consola);
             case 4 -> {
                 System.out.println("Regresa pronto!");
-                salir=true;
+                return true;
 
             }
-            default -> System.out.println("Opción invalida: "+ opcion);
+            default -> System.out.println("Opción invalida: " + opcion);
         }
-        return salir;
+        return false;
     }
 
+    /**
+     * Permite al usuario comprar un snack ingresando su ID.
+     *
+     * @param consola            Scanner para capturar la entrada del usuario.
+     * @param productosComprados Lista donde se almacenarán los snacks comprados.
+     */
+    private static void comprarSnack(Scanner consola, List<Snack> productosComprados) {
 
-    private static void comprarSnack(Scanner consola, List<Snack> productos) {
-        System.out.println("--Que snack quieres comprar (id) ?");
-        var idsnack = Integer.parseInt(consola.nextLine());
-        var snackEncontrado = false;
-        for (var snack : Snacks.getSnacks()) {
-            if (idsnack == snack.getIdSnack()) {
-                productos.add(snack);
-                System.out.println(" Ok, Snack agregado : " + snack);
-                snackEncontrado = true;
-                break;
+
+        boolean seguirComprando = true;
+        do {
+            System.out.println("¿Qué snack quieres comprar (id)?");
+            int idSnack = Integer.parseInt(consola.nextLine());
+
+
+            Snacks.getSnacks().stream()
+                    .filter(snack -> snack.getIdSnack() == idSnack)
+                    .findFirst()
+                    .ifPresentOrElse(
+                            snack -> {
+                                productosComprados.add(snack);
+                                System.out.println("Snack agregado: " + snack);
+                            },
+                            () -> System.out.println("Id de snack no encontrado: " + idSnack)
+                    );
+
+            System.out.println("¿Desea comprar otro snacks ? (s/n)");
+            String respuesta = consola.nextLine().trim().toLowerCase();
+
+            if (!respuesta.equals("s")) {
+                seguirComprando = false;
             }
-        }
-        if (!snackEncontrado) {
-            System.out.println(" Id de snack no encontrado: " + idsnack);
-        }
+        } while (seguirComprando);
+
+        System.out.println("Compra finalizada.");
     }
 
-    private static void mostrarTicket(List<Snack> productos) {
-        var ticket = new StringBuilder("*** Ticket de venta ***");
-        var total = 0.0;
+    /**
+     * Muestra el ticket con los snacks comprados y el total a pagar.
+     *
+     * @param productosComprados Lista de snacks comprados.
+     */
+    private static void mostrarTicket(List<Snack> productosComprados) {
+        StringBuilder ticket = new StringBuilder("*** Ticket de Venta ***\n");
+        double total = productosComprados.stream()
+                .mapToDouble(Snack::getPrecio)
+                .sum();
 
-        for (var producto : productos) {
-            ticket.append("\n\t-")
-                    .append(producto.getNombre())
-                    .append(" - $")
-                    .append(producto.getPrecio());
-            total += producto.getPrecio();
-        }
+        productosComprados.forEach(producto ->
+                ticket.append("- ").append(producto.getNombre())
+                        .append(" - $").append(producto.getPrecio()).append("\n")
+        );
 
-        ticket.append("\n\tTotal -> $").append(total);
+        ticket.append("Total: $").append(total);
         System.out.println(ticket);
     }
 
-
+    /**
+     * Permite al usuario agregar un nuevo snack al inventario.
+     *
+     * @param consola Scanner para capturar los datos del nuevo snack.
+     */
     private static void agregarSnack(Scanner consola) {
-        System.out.println("Nombre del snack : ");
-        var nombre = consola.nextLine();
-        System.out.println("Precio del snack : ");
-        var precio = Double.parseDouble(consola.nextLine());
-        Snacks.agregarSnack(new Snack(nombre, precio));
-        System.out.println("Tu snack se ha agregado correctamente");
-        Snacks.mostrarSnacks();
+        boolean seguirAgregando = true;
+        do {
+            System.out.print("Nombre del snack: ");
+            String nombre = consola.nextLine();
+            System.out.print("Precio del snack: ");
+            double precio = Double.parseDouble(consola.nextLine());
+
+            Snacks.agregarSnack(new Snack(nombre, precio));
+            System.out.println("Snack agregado correctamente.");
+            Snacks.mostrarSnacks();
+
+            System.out.println("¿Deseas agregar otro snack? (s/n)");
+            String respuesta = consola.nextLine().trim().toLowerCase();
+
+            if (!respuesta.equals("s")) {
+                seguirAgregando = false;
+
+            }
+        } while (seguirAgregando);
     }
 }
