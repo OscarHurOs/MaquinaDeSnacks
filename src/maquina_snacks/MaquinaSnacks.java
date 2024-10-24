@@ -4,6 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
+/**
+ * Clase principal que representa la lógica de interacción de la máquina de snacks.
+ * Permite al usuario comprar snacks, ver el ticket de compra y añadir nuevos productos.
+ */
 public class MaquinaSnacks {
     public static void main(String[] args) {
         maquinaSnacks();
@@ -29,7 +33,12 @@ public class MaquinaSnacks {
         }
     }
 
-
+    /**
+     * Muestra el menú de opciones disponibles para el usuario y retorna su selección.
+     *
+     * @param consola Scanner para capturar la entrada del usuario.
+     * @return Opción seleccionada por el usuario.
+     */
     private static int mostrarMenu(Scanner consola) {
         System.out.println("""
                 Menu:
@@ -42,6 +51,14 @@ public class MaquinaSnacks {
         return Integer.parseInt(consola.nextLine());
     }
 
+    /**
+     * Procesa la opción seleccionada por el usuario y ejecuta la acción correspondiente.
+     *
+     * @param opcion    Opción ingresada por el usuario.
+     * @param consola   Scanner para la entrada del usuario.
+     * @param productos Lista de snacks comprados por el usuario.
+     * @return true si el usuario decide salir; false en caso contrario.
+     */
     private static boolean ejecutarOpciones(int opcion, Scanner consola, List<Snack> productos) {
 
         var salir = false;
@@ -51,15 +68,20 @@ public class MaquinaSnacks {
             case 3 -> agregarSnack(consola);
             case 4 -> {
                 System.out.println("Regresa pronto!");
-                salir=true;
+                salir = true;
 
             }
-            default -> System.out.println("Opción invalida: "+ opcion);
+            default -> System.out.println("Opción invalida: " + opcion);
         }
         return salir;
     }
 
-
+    /**
+     * Permite al usuario comprar un snack ingresando su ID.
+     *
+     * @param consola   Scanner para capturar la entrada del usuario.
+     * @param productos Lista donde se almacenarán los snacks comprados.
+     */
     private static void comprarSnack(Scanner consola, List<Snack> productos) {
         System.out.println("--Que snack quieres comprar (id) ?");
         var idsnack = Integer.parseInt(consola.nextLine());
@@ -77,6 +99,11 @@ public class MaquinaSnacks {
         }
     }
 
+    /**
+     * Muestra el ticket con los snacks comprados y el total a pagar.
+     *
+     * @param productos Lista de snacks comprados.
+     */
     private static void mostrarTicket(List<Snack> productos) {
         var ticket = new StringBuilder("*** Ticket de venta ***");
         var total = 0.0;
@@ -93,7 +120,10 @@ public class MaquinaSnacks {
         System.out.println(ticket);
     }
 
-
+    /**
+     * Permite al usuario agregar un nuevo snack al inventario.
+     * @param consola Scanner para capturar los datos del nuevo snack.
+     */
     private static void agregarSnack(Scanner consola) {
         System.out.println("Nombre del snack : ");
         var nombre = consola.nextLine();
