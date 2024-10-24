@@ -12,12 +12,17 @@ public class MaquinaSnacks {
     public static void main(String[] args) {
 
         try (var consola = new Scanner(System.in)) {
-            new MaquinaSnacks().iniciarMaquina(consola);
+            iniciarMaquina(consola);
         } catch (Exception e) {
             System.out.println("Error inesperado: " + e.getMessage());
         }
     }
 
+    /**
+     * Inicia la máquina de snacks, gestionando el flujo principal.
+     *
+     * @param consola Scanner para la entrada del usuario.
+     */
     private static void iniciarMaquina(Scanner consola) {
         boolean salir = false;
         List<Snack> productosComprados = new ArrayList<>();
@@ -59,8 +64,8 @@ public class MaquinaSnacks {
     /**
      * Procesa la opción seleccionada por el usuario y ejecuta la acción correspondiente.
      *
-     * @param opcion    Opción ingresada por el usuario.
-     * @param consola   Scanner para la entrada del usuario.
+     * @param opcion             Opción ingresada por el usuario.
+     * @param consola            Scanner para la entrada del usuario.
      * @param productosComprados Lista de snacks comprados por el usuario.
      * @return true si el usuario decide salir; false en caso contrario.
      */
@@ -83,23 +88,38 @@ public class MaquinaSnacks {
     /**
      * Permite al usuario comprar un snack ingresando su ID.
      *
-     * @param consola   Scanner para capturar la entrada del usuario.
+     * @param consola            Scanner para capturar la entrada del usuario.
      * @param productosComprados Lista donde se almacenarán los snacks comprados.
      */
     private static void comprarSnack(Scanner consola, List<Snack> productosComprados) {
-        System.out.println("¿Qué snack quieres comprar (id)?");
-        int idSnack = Integer.parseInt(consola.nextLine());
 
-        Snacks.getSnacks().stream()
-                .filter(snack -> snack.getIdSnack() == idSnack)
-                .findFirst()
-                .ifPresentOrElse(
-                        snack -> {
-                            productosComprados.add(snack);
-                            System.out.println("Snack agregado: " + snack);
-                        },
-                        () -> System.out.println("Id de snack no encontrado: " + idSnack)
-                );
+
+        boolean seguirComprando = true;
+        do {
+            System.out.println("¿Qué snack quieres comprar (id)?");
+            int idSnack = Integer.parseInt(consola.nextLine());
+
+
+            Snacks.getSnacks().stream()
+                    .filter(snack -> snack.getIdSnack() == idSnack)
+                    .findFirst()
+                    .ifPresentOrElse(
+                            snack -> {
+                                productosComprados.add(snack);
+                                System.out.println("Snack agregado: " + snack);
+                            },
+                            () -> System.out.println("Id de snack no encontrado: " + idSnack)
+                    );
+
+            System.out.println("¿Desea comprar otro snacks ? (s/n)");
+            String respuesta = consola.nextLine().trim().toLowerCase();
+
+            if (!respuesta.equals("s")) {
+                seguirComprando = false;
+            }
+        } while (seguirComprando);
+
+        System.out.println("Compra finalizada.");
     }
 
     /**
@@ -128,13 +148,24 @@ public class MaquinaSnacks {
      * @param consola Scanner para capturar los datos del nuevo snack.
      */
     private static void agregarSnack(Scanner consola) {
-        System.out.print("Nombre del snack: ");
-        String nombre = consola.nextLine();
-        System.out.print("Precio del snack: ");
-        double precio = Double.parseDouble(consola.nextLine());
+        boolean seguirAgregando = true;
+        do {
+            System.out.print("Nombre del snack: ");
+            String nombre = consola.nextLine();
+            System.out.print("Precio del snack: ");
+            double precio = Double.parseDouble(consola.nextLine());
 
-        Snacks.agregarSnack(new Snack(nombre, precio));
-        System.out.println("Snack agregado correctamente.");
-        Snacks.mostrarSnacks();
+            Snacks.agregarSnack(new Snack(nombre, precio));
+            System.out.println("Snack agregado correctamente.");
+            Snacks.mostrarSnacks();
+
+            System.out.println("¿Deseas agregar otro snack? (s/n)");
+            String respuesta = consola.nextLine().trim().toLowerCase();
+
+            if (!respuesta.equals("s")) {
+                seguirAgregando = false;
+
+            }
+        } while (seguirAgregando);
     }
 }
