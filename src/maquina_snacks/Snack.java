@@ -6,22 +6,14 @@ import java.util.Objects;
 public class Snack implements Serializable {
 
     private static int contadorSnacks = 0;
-    private int idSnack;
+    private final int idSnack;
     private String nombre;
     private double precio;
 
-    public Snack() {
-        this.idSnack = ++Snack.contadorSnacks;
-    }
-
     public Snack(String nombre, double precio) {
-        this();
-        this.nombre = nombre;
-        this.precio = precio;
-    }
-
-    public static int getContadorSnacks() {
-        return contadorSnacks;
+        this.idSnack = ++contadorSnacks;
+        setNombre(nombre);
+        setPrecio(precio);
     }
 
     public int getIdSnack() {
@@ -33,6 +25,9 @@ public class Snack implements Serializable {
     }
 
     public void setNombre(String nombre) {
+        if (nombre == null || nombre.isBlank()) {
+            throw new IllegalArgumentException("El nombre no puede estar vacío.");
+        }
         this.nombre = nombre;
     }
 
@@ -41,6 +36,9 @@ public class Snack implements Serializable {
     }
 
     public void setPrecio(double precio) {
+        if (precio < 0) {
+            throw new IllegalArgumentException("El precio no puede ser negativo.");
+        }
         this.precio = precio;
     }
 
