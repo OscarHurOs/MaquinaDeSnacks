@@ -10,21 +10,26 @@ import java.util.Scanner;
  */
 public class MaquinaSnacks {
     public static void main(String[] args) {
-        maquinaSnacks();
+
+        try (var consola = new Scanner(System.in)) {
+            new MaquinaSnacks().iniciarMaquina(consola);
+        } catch (Exception e) {
+            System.out.println("Error inesperado: " + e.getMessage());
+        }
     }
 
-    private static void maquinaSnacks() {
-        var salir = false;
-        var consola = new Scanner(System.in);
-
-        List<Snack> productos = new ArrayList<>();
+    private static void iniciarMaquina(Scanner consola) {
+        boolean salir = false;
+        List<Snack> productosComprados = new ArrayList<>();
         System.out.println("--- Maquina de snacks ---");
         Snacks.mostrarSnacks();
 
         while (!salir) {
             try {
-                var opcion = mostrarMenu(consola);
-                salir = ejecutarOpciones(opcion, consola, productos);
+                int opcion = mostrarMenu(consola);
+                salir = ejecutarOpciones(opcion, consola, productosComprados);
+            } catch (NullPointerException num) {
+                System.out.println("Entrada inválida. Por favor, ingresa un número.");
             } catch (Exception e) {
                 System.out.println("Ocurrió un error: " + e.getMessage());
             } finally {
@@ -56,15 +61,15 @@ public class MaquinaSnacks {
      *
      * @param opcion    Opción ingresada por el usuario.
      * @param consola   Scanner para la entrada del usuario.
-     * @param productos Lista de snacks comprados por el usuario.
+     * @param productosComprados Lista de snacks comprados por el usuario.
      * @return true si el usuario decide salir; false en caso contrario.
      */
-    private static boolean ejecutarOpciones(int opcion, Scanner consola, List<Snack> productos) {
+    private static boolean ejecutarOpciones(int opcion, Scanner consola, List<Snack> productosComprados) {
 
         var salir = false;
         switch (opcion) {
-            case 1 -> comprarSnack(consola, productos);
-            case 2 -> mostrarTicket(productos);
+            case 1 -> comprarSnack(consola, productosComprados);
+            case 2 -> mostrarTicket(productosComprados);
             case 3 -> agregarSnack(consola);
             case 4 -> {
                 System.out.println("Regresa pronto!");
@@ -80,15 +85,15 @@ public class MaquinaSnacks {
      * Permite al usuario comprar un snack ingresando su ID.
      *
      * @param consola   Scanner para capturar la entrada del usuario.
-     * @param productos Lista donde se almacenarán los snacks comprados.
+     * @param productosComprados Lista donde se almacenarán los snacks comprados.
      */
-    private static void comprarSnack(Scanner consola, List<Snack> productos) {
+    private static void comprarSnack(Scanner consola, List<Snack> productosComprados) {
         System.out.println("--Que snack quieres comprar (id) ?");
         var idsnack = Integer.parseInt(consola.nextLine());
         var snackEncontrado = false;
         for (var snack : Snacks.getSnacks()) {
             if (idsnack == snack.getIdSnack()) {
-                productos.add(snack);
+                productosComprados.add(snack);
                 System.out.println(" Ok, Snack agregado : " + snack);
                 snackEncontrado = true;
                 break;
@@ -102,13 +107,13 @@ public class MaquinaSnacks {
     /**
      * Muestra el ticket con los snacks comprados y el total a pagar.
      *
-     * @param productos Lista de snacks comprados.
+     * @param productosComprados Lista de snacks comprados.
      */
-    private static void mostrarTicket(List<Snack> productos) {
+    private static void mostrarTicket(List<Snack> productosComprados) {
         var ticket = new StringBuilder("*** Ticket de venta ***");
         var total = 0.0;
 
-        for (var producto : productos) {
+        for (var producto : productosComprados) {
             ticket.append("\n\t-")
                     .append(producto.getNombre())
                     .append(" - $")
@@ -122,6 +127,7 @@ public class MaquinaSnacks {
 
     /**
      * Permite al usuario agregar un nuevo snack al inventario.
+     *
      * @param consola Scanner para capturar los datos del nuevo snack.
      */
     private static void agregarSnack(Scanner consola) {
